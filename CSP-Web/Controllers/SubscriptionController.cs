@@ -46,7 +46,8 @@ namespace CSP_Web.Controllers
             if (!EndDate.HasValue)
                 EndDate = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day);
 
-            //UsageRecord usage = crestService.GetUsage(SubscriptionId, StartDate.Value, EndDate.Value, Granularity, ShowDetails, Count);
+            if (DateTime.Compare(EndDate.Value, StartDate.Value) == 0)
+                StartDate = StartDate.Value.AddMonths(-1);
 
             ViewBag.SubscriptionId = SubscriptionId;
             ViewBag.StartDate = StartDate.Value;
