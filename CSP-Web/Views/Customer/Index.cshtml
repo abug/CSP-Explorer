@@ -1,0 +1,106 @@
+﻿@using CSP_Graph.Entities;
+@using Newtonsoft.Json;
+@model List<Contract>
+@{
+    ViewBag.Title = "Customer";
+}
+<div id="customer-table" style="margin-top: 25px;">
+
+</div>
+
+@section scripts {
+    <script>
+
+        $(document).ready(function () {
+            $('#customer-table').jtable({
+                title: 'Customers',
+                paging: false,
+                sorting: false,
+                edit: false,
+                create: false,
+                actions: {
+                    listAction: '@Url.Action("GetCustomers")'
+                },
+                fields: {
+                    subscriptions: {
+                        title: '',
+                        width: '10%',
+                        sorting: false,
+                        listClass: 'child-opener-image-column',
+                        display: function (customerData) {
+                            var $subbtn = $('<button class="subscription-button" type="button" data-customer-id="' + customerData.record.customerContextId + '">Subscriptions</button>');
+                            $subbtn.click(function () {
+                                $('#customer-table').jtable('openChildTable',
+                                    $subbtn.closest('tr'),
+                                    {
+                                        title: customerData.record.displayName + ' - Subscriptions',
+                                        paging: false,
+                                        sorting: false,
+                                        defaultSorting: 'id ASC',
+                                        edit: false,
+                                        create: false,
+                                        actions: {
+                                            listAction: '@Url.Action("GetSubscriptions")?CustomerAADId=' + customerData.record.customerContextId
+                                        },
+                                        fields: {
+                                            friendly_name: {
+                                                title: 'Name',
+                                                width: '35%',
+                                                display: function (subscriptionData) {
+                                                    return subscriptionData.record.friendly_name == null ? subscriptionData.record.id : subscriptionData.record.friendly_name;
+                                                }
+                                            },
+                                            id: {
+                                                key: true,
+                                                width: '35%',
+                                                title: 'Subscription ID'
+                                            },
+                                            state: {
+                                                title: 'State',
+                                                width: '20%'
+                                            },
+                                            usage: {
+                                                title: '',
+                                                width: '10%',
+                                                sorting: false,
+                                                listClass: 'child-opener-image-column',
+                                                display: function (subscriptionData) {
+                                                    var $usgbtn = $('<button class="usage-button" type="button" data-customer-id="' + subscriptionData.record.id + '">Usage</button>');
+                                                    $usgbtn.click(function () {
+                                                        window.location = '@Url.Action("Usage", "Subscription")?SubscriptionId=' + subscriptionData.record.id;
+                                                    });
+                                                    return $usgbtn;
+                                                }
+                                            }
+                                        }
+                                    }, function (data) {
+                                        data.childTable.jtable('load');
+                                    });
+                            });
+                            return $subbtn;
+                        }
+                    },
+                    objectId: {
+                        key: true,
+                        title: 'Object Id',
+                        list: false
+                    },
+                    displayName: {
+                        title: 'Name',
+                        width: '35%'
+                    },
+                    defaultDomainName: {
+                        title: 'AAD Domain',
+                        width: '30%'
+                    },
+                    customerContextId: {
+                        title: 'AAD Tenant ID',
+                        width: '25%'
+                    }
+                }
+            });
+
+            $('#customer-table').jtable('load');
+        });
+    </script>
+}

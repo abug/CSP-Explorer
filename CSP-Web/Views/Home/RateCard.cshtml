@@ -1,0 +1,81 @@
+﻿@{
+    ViewBag.Title = "RateCard";
+}
+
+<div id="rate-card-table" style="margin-top: 25px;">
+
+</div>
+
+@section scripts {
+    <script>
+
+        $(document).ready(function () {
+            $('#rate-card-table').jtable({
+                title: 'Azure Rate Card',
+                paging: false,
+                sorting: false,
+                edit: false,
+                create: false,
+                actions: {
+                        listAction: '@Url.Action("GetMeters")'
+                },
+                fields: {
+                    MeterId: {
+                        title: 'Id'
+                    },
+                    MeterCategory: {
+                        title: 'Category'
+                    },
+                    MeterSubCategory: {
+                        title: 'Subcategory'
+                    },
+                    MeterName: {
+                        title: 'Name'
+                    },
+                    Unit: {
+                        title: 'Unit'
+                    },
+                    MeterTags: {
+                        title: 'Tags',
+                        display: function (meterData) {
+                            return JSON.stringify(meterData.record.MeterTags);
+                        }
+                    },
+                    MeterRegion: {
+                        title: 'Region'
+                    },
+                    MeterRates: {
+                        title: 'Rates',
+                        display: function (meterData) {
+                            var table = $('<table border="1" cellpadding="2" cellspacing="2" style="width: 100%;">');
+                            $.each(meterData.record.MeterRates, function (index, value) {
+                                table.append('<tr><td width="50%">' + index + '</td><td width="50%">' + value + '</td></tr>');
+                            });
+                            table.append('</table>');
+                            return table;
+                        }
+                    },
+                    EffectiveDate: {
+                        title: 'Effective Date',
+                        display: function (meterData) {
+                            return FixDate(meterData.record.EffectiveDate);
+                        }
+                    },
+                    IncludedQuantity: {
+                        title: 'Included'
+                    }
+                }
+            });
+
+            $('#rate-card-table').jtable('load');
+        });
+
+        function FixDate(date) {
+            var d = date.replace(/\/Date\((-?\d+)\)\//gi, "$1");
+            var x = new Date(parseInt(d));
+            var n = new Date().getTimezoneOffset();
+            var y = new Date(x.getTime() + n * 60000);
+            return $.datepicker.formatDate("mm-dd-yy ", y);
+        }
+    </script>
+}

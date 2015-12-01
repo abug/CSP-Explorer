@@ -1,0 +1,48 @@
+﻿@model CSP_CREST.Entities.Subscription
+@{
+    ViewBag.Title = "Subscription";
+}
+
+<div id="subscription-table" style="margin-top: 25px;">
+    <table border="1" cellspacing="10" cellpadding="10">
+        <tr>
+            <td>Name</td>
+            <td>@(Model.friendly_name == null ? Model.id : Model.friendly_name)</td>
+        </tr>
+        <tr>
+            <td>Subscription ID</td>
+            <td>@Model.id</td>
+        </tr>
+        <tr>
+            <td>Start Date</td>
+            <td>@Model.effective_start_date</td>
+        </tr>
+        <tr>
+            <td>Quantity</td>
+            <td>@Model.quantity</td>
+        </tr>
+        <tr>
+            <td>State</td>
+            <td>@Model.state</td>
+        </tr>
+        <tr>
+            <td>Notes</td>
+            <td>
+                <ul>
+                @foreach(string reason in Model.suspension_reasons)
+                {
+                    <li>reason</li>
+                }
+                </ul>
+            </td>
+        </tr>
+        <tr>
+            <td>Actions</td>
+            <td>
+                <button class="usage-button" type="button" data-customer-id="@Model.id" onclick="window.location = '@Url.Action("Usage", "Subscription")?SubscriptionId=@Model.id';">Usage</button>
+            </td>
+        </tr>
+    </table>
+</div>
+
+

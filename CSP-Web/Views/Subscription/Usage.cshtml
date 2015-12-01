@@ -1,0 +1,273 @@
+﻿@{
+    ViewBag.Title = "Usage";
+}
+
+<div id="usage-settings-table" style="margin-top: 25px">
+    <table border="1" cellspacing="10" cellpadding="10" width="100%">
+        <thead>
+            <tr>
+                <th>Repoted Start Date</th>
+                <th>Reported End Date</th>
+                <th>Report Type</th>
+                <th style="display: none;">Granularity</th>
+                <th style="display: none;">Details</th>
+                <th style="display: none;">Count</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><input id="filter-usage-start-date" type="text" value="@ViewBag.StartDate.ToShortDateString()" /></td>
+                <td><input id="filter-usage-end-date" type="text" value="@ViewBag.EndDate.ToShortDateString()" /></td>
+                <td>
+                    <select id="filter-usage-report-type" name="ReportType">
+                        <option value="summary" @(ViewBag.Granularity.ToLower() != "hourly" ? "selected" : "")>Summary</option>
+                        <option value="detailed" @(ViewBag.Granularity.ToLower() == "hourly" ? "selected" : "")>Detailed</option>
+                    </select>
+                </td>
+                <td style="display: none;">
+                    <select id="filter-usage-granularity" name="Granularity">
+                        <option value="daily"@(ViewBag.Granularity.ToLower() != "hourly" ? "selected" : "")>Daily</option>
+                        <option value="hourly"@(ViewBag.Granularity.ToLower() == "hourly" ? "selected" : "")>Hourly</option>
+                    </select>
+                </td>
+                <td style="display: none;">
+                    <input id="filter-usage-show-details" type="checkbox" name="ShowDetails" checked="@(ViewBag.ShowDetails)" />
+                </td>
+                <td style="display: none;"><input id="filter-usage-count" type="text" value="@ViewBag.Count" max="1000" /></td>
+            </tr>
+        </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="5" align="center">
+                    <button class="refresh-usage-button" type="button">Refresh</button>
+                </td>
+            </tr>
+        </tfoot>
+    </table>
+</div>
+<div id="usage-table" style="margin-top: 25px;">
+
+</div>
+
+@section scripts {
+    <script>
+
+        $(document).ready(function () {
+            $('#usage-table').jtable({
+                            title: 'Usage for @ViewBag.SubscriptionId',
+                paging: false,
+                sorting: false,
+                toolbar: {
+                    items: [
+                        {
+                            text: 'Limited to first 1000 records!!!'
+                        }
+                    ]
+                },
+                edit: false,
+                create: false,
+                footer: @(ViewBag.ShowDetails ? "false" : "true"),
+                actions: {
+                                listAction: '@Url.Action("GetUsage")?SubscriptionId=@ViewBag.SubscriptionId'
+                        @if (ViewBag.StartDate != DateTime.MinValue) {
+                            @:+ '&StartDate=@ViewBag.StartDate'
+                        }
+                        @if (ViewBag.EndDate != DateTime.MinValue) {
+                            @:+ '&EndDate=@ViewBag.EndDate'
+                        }
+                        @if (ViewBag.Granularity != null) {
+                            @:+ '&Granularity=@ViewBag.Granularity'
+                        }
+                        @if (ViewBag.ShowDetails) {
+                            @:+ '&ShowDetails=true'
+                        }
+                        @if (ViewBag.Count != null) {
+                            @:+ '&Count=@ViewBag.Count'
+                        }
+                },
+                fields: {
+                    usage_start_time: {
+                        title: 'Usage Start',
+                        display: function (usageData) {
+                            //var d = $.datepicker.formatDate("mm-dd-yy", FixDate(new Date(parseInt(usageData.record.item.usage_start_time.replace(/\/Date\((-?\d+)\)\//gi, "$1")))));
+                            return FixDate(usageData.record.item.usage_start_time);
+                        }
+                    },
+                    usage_end_time: {
+                        title: 'Usage End',
+                        display: function (usageData) {
+                            //var d = $.datepicker.formatDate("mm-dd-yy", FixDate(new Date(parseInt(usageData.record.item.usage_end_time.replace(/\/Date\((-?\d+)\)\//gi, "$1")))));
+                            return FixDate(usageData.record.item.usage_end_time);
+                        }
+                    },
+                    category: {
+                        title: 'Category',
+                        display: function (usageData) {
+                            return (usageData.record.item.meter_category == null ? usageData.record.meter.MeterCategory : usageData.record.item.meter_category);
+                        }
+                    },
+                    sub_category: {
+                        title: 'Subcategory',
+                        display: function (usageData) {
+                            return (usageData.record.item.meter_sub_category == null ? usageData.record.meter.MeterSubCategory : usageData.record.item.meter_sub_category);
+                        }
+                    },
+                    meter_name: {
+                        title: 'Name',
+                        display: function (usageData) {
+                            return (usageData.record.item.meter_name == null ? usageData.record.meter.MeterName : usageData.record.item.meter_name);
+                        }
+                    },
+                    meter_region: {
+                        title: 'Region',
+                        display: function (usageData) {
+                            return usageData.record.item.meter_region;
+                        }
+                    },
+                    unit: {
+                        title: 'Unit',
+                        display: function (usageData) {
+                            return usageData.record.item.unit;
+                        }
+                    },
+                    quantity: {
+                        title: 'Quantity',
+                        display: function (usageData) {
+                            return usageData.record.item.quantity.toFixed(4);
+                        }
+                    },
+                    included_quantity: {
+                        title: 'Included',
+                        list: @(ViewBag.ShowDetails ? "true" : "false"),
+                        display: function (usageData) {
+                            return usageData.record.meter.IncludedQuantity;
+                        }
+                    },
+                    rates: {
+                        title: 'Rates',
+                        list: @(ViewBag.ShowDetails ? "true" : "false"),
+                        display: function (usageData) {
+                            var table = $('<table border="1" cellpadding="2" cellspacing="2" style="width: 100%;">');
+                            $.each(usageData.record.meter.MeterRates, function (index, value) {
+                                table.append('<tr><td width="50%">' + index + '</td><td width="50%">' + value + '</td></tr>');
+                            });
+                            table.append('</table>');
+                            return table;
+                        },
+                        footer: function (data) { return 'Estimate'; }
+                    },
+                    cost: {
+                        title: 'Cost',
+                        list: @(ViewBag.ShowDetails ? "false" : "true"),
+                        display: function(usageData) {
+                            return ("$ " + CalculateTieredCost(usageData.record).toFixed(2));
+                        },
+                        footer: function (data) {
+                            var total = 0;
+                            $.each(data.Records, function (index, record) {
+                                total += CalculateTieredCost(record);
+                            });
+                            return ("$ " + total.toFixed(2));
+                        }
+                    },
+                    info_fields: {
+                        title: 'Info',
+                        list: false, //@(ViewBag.ShowDetails ? "true" : "false"),
+                        display: function (usageData) {
+                            var table = $('<table border="1" cellpadding="2" cellspacing="2" style="width: 100%;">');
+                            $.each(usageData.record.item.info_fields, function (index, value) {
+                                table.append('<tr><td width="50%">' + index + '</td><td width="50%">' + value + '</td></tr>');
+                            });
+                            table.append('</table>');
+                            return table;
+                        }
+                    }
+                }
+            });
+
+            $('#usage-table').jtable('load');
+
+            $(".refresh-usage-button").click(function() {
+                var url = '@Url.Action("Usage","Subscription")?SubscriptionId=@ViewBag.SubscriptionId'
+                if ($("#filter-usage-start-date").val() != '')
+                    url += '&StartDate=' + $("#filter-usage-start-date").val();
+                if ($("#filter-usage-end-date").val() != '')
+                    url += '&EndDate=' + $("#filter-usage-end-date").val();
+                if ($("#filter-usage-report-type").val() != 'detailed')
+                    url += '&Granularity=daily&ShowDetails=false&Count=1000';
+                else
+                    url += '&Granularity=hourly&ShowDetails=true&Count=1000';
+
+                /*
+                if ($("#filter-usage-granularity").val() != null)
+                    url += '&Granularity=' + $("#filter-usage-granularity").val();
+                if ($("#filter-usage-show-details").prop('checked'))
+                    url += '&ShowDetails=true';
+                if ($("#filter-usage-count").val() > 0 && $("#filter-usage-count").val() < 1000)
+                    url += '&Count=' + $("#filter-usage-count").val();
+                */
+
+                window.location = url;
+            });
+        });
+
+        function CalculateTieredCost(record) {
+            var meterRates = record.meter.MeterRates;
+            var qtyIncl = record.meter.IncludedQuantity
+            var qty = record.item.quantity;
+
+            var totalCost = 0;
+            var qtyUsed = qty - qtyIncl;
+
+            if (qtyUsed > 0) {
+                var keys = Object.keys(meterRates)
+                var i = 0;
+
+                for(var key in meterRates) { 
+                    var tierQty = 0;
+
+                    if (qtyUsed < keys[i+1]) {
+                        //no more charges after this tier
+                        tierQty = qtyUsed - keys[i];
+                        totalCost += tierQty * meterRates[key];
+                        break;
+                    }
+                    else if (i == keys.length - 1) {
+                        //last tier
+                        tierQty = qtyUsed - keys[i];
+                        totalCost += tierQty * meterRates[key];
+                    }
+                    else
+                    {
+                        tierQty = keys[i+1] - keys[i];
+                        totalCost += tierQty * meterRates[key];
+                    }
+                
+                    i++;
+                }
+            }
+
+            return totalCost;
+        }
+
+        function FixDate(date) {
+            var d = date.replace(/\/Date\((-?\d+)\)\//gi, "$1");
+            var x = new Date(parseInt(d));
+            
+            var n = new Date().getTimezoneOffset();
+
+            var y = new Date(x.getTime() + n*60000);
+
+            var granularity = '@ViewBag.Granularity.ToLower()';
+
+            if (granularity == 'hourly') {
+                return y.toLocaleString();
+            }
+            else {
+                return $.datepicker.formatDate("mm-dd-yy ", y);
+            }
+        }
+        
+    </script>
+}
+

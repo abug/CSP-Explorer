@@ -1,0 +1,44 @@
+﻿@model CSP_Web.Services.ResellerService
+@{
+    ViewBag.Title = "Home";
+}
+
+@using (Html.BeginForm("Index", "Customer"))
+{
+    <div id="reseller-table" style="margin-top: 25px;">
+        <table border="1" cellspacing="10" cellpadding="10">
+            <tr>
+                <td>Tenant Name</td>
+                <td>@Model.tenant_name</td>
+            </tr>
+            <tr>
+                <td>CREST Account ID</td>
+                <td>@Model.crest_account_id</td>
+            </tr>
+            <tr>
+                <td>CREST App ID</td>
+                <td>@Model.crest_app_id</td>
+            </tr>
+            <tr>
+                <td>CREST App Key</td>
+                <td>******</td>
+            </tr>
+            <tr>
+                <td>Graph App ID</td>
+                <td>@Model.graph_app_id</td>
+            </tr>
+            <tr>
+                <td>Graph App Key</td>
+                <td>******</td>
+            </tr>
+            <tr>
+                <td>Actions</td>
+                <td>
+                    <input type="submit" value="Customers" />
+                    <button class="flush-tokens-button" type="button" onclick="window.location = '@Url.Action("Index", "Home")?Reinitialize=true';">Reinitialize</button>
+                    <button class="rate-card-button" type="button" onclick="window.location = '@Url.Action("RateCard", "Home")'">RateCard</button>
+                </td>
+            </tr>
+        </table>
+    </div>
+}
