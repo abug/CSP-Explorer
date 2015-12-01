@@ -11,6 +11,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CSP-CREST", "CSP-CREST\CSP-
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CSP-Web", "CSP-Web\CSP-Web.csproj", "{90B43C51-AA45-4512-8111-D7BD2B58A929}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{CC3F6B92-188A-4038-8917-193490648B85}"
+	ProjectSection(SolutionItems) = preProject
+		CSP-Utilities\CreateCSPExplorerADSPN.ps1 = CSP-Utilities\CreateCSPExplorerADSPN.ps1
+		LICENSE = LICENSE
+		readme.md = readme.md
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
